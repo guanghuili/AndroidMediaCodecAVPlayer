@@ -8,10 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.devtips.avplayer.opengl.DemoGLTextureActivity;
+import com.devtips.avplayer.opengl.DemoGLTriangleActivity;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBarLayout;
 import com.qmuiteam.qmui.widget.grouplist.QMUICommonListItemView;
 import com.qmuiteam.qmui.widget.grouplist.QMUIGroupListView;
+
+import java.util.HashMap;
 
 /**
  * @PACKAGE_NAME: com.devtips.avplayer
@@ -64,21 +68,43 @@ null,
         itemWithDetail.setTag(1);
 
 
+        QMUICommonListItemView glTriangleItemWithDetail = mGroupListView.createItemView(
+                null,
+                "OpenGL 绘制三角形示例",
+                null,
+                QMUICommonListItemView.HORIZONTAL,
+                QMUICommonListItemView.ACCESSORY_TYPE_NONE);
+        glTriangleItemWithDetail.setTag(2);
+
+        QMUICommonListItemView glTextureItemWithDetail = mGroupListView.createItemView(
+                null,
+                "OpenGL 绘制纹理示例",
+                null,
+                QMUICommonListItemView.HORIZONTAL,
+                QMUICommonListItemView.ACCESSORY_TYPE_NONE);
+        glTextureItemWithDetail.setTag(3);
+
+
+        final HashMap<Integer,Class> mDemoMap = new HashMap(){
+
+            {
+                put(0,DemoMediaExtractorActivity.class);
+                put(1,DemoMediaCodecActivity.class);
+                put(2,DemoGLTriangleActivity.class);
+                put(3,DemoGLTextureActivity.class);
+            }
+
+        };
+
+
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch ((int)v.getTag()) {
-                    case 0:{
-                        Intent intent = new Intent(DemoListActivity.this,DemoMediaExtractorActivity.class);
-                        startActivity(intent);
-                        break;
-                    }
-                    case 1:{
-                        Intent intent = new Intent(DemoListActivity.this,DemoMediaCodecActivity.class);
-                        startActivity(intent);
-                        break;
-                    }
-                }
+
+                int tag = (int) v.getTag();
+                Class clazz = mDemoMap.get(tag);
+                Intent intent = new Intent(DemoListActivity.this,clazz);
+                startActivity(intent);
             }
         };
         int size = QMUIDisplayHelper.dp2px(this, 20);
@@ -87,6 +113,8 @@ null,
                 .setLeftIconSize(size, ViewGroup.LayoutParams.WRAP_CONTENT)
                 .addItemView(normalItem, onClickListener)
                 .addItemView(itemWithDetail, onClickListener)
+                .addItemView(glTriangleItemWithDetail, onClickListener)
+                .addItemView(glTextureItemWithDetail, onClickListener)
                 .addTo(mGroupListView);
 
     }

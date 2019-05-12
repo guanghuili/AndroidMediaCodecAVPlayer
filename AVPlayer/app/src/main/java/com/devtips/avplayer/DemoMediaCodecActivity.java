@@ -175,7 +175,7 @@ public class DemoMediaCodecActivity extends Activity {
         MediaExtractor extractor = new MediaExtractor();
         // step 2：为媒体分离器装载媒体文件路径
         // 指定文件路径
-        Uri videoPathUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.img_video);
+        Uri videoPathUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.demo_video);
         try {
             extractor.setDataSource(this, videoPathUri, null);
         } catch (IOException e) {
