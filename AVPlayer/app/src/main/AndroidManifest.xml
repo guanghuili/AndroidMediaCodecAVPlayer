@@ -24,5 +24,7 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name=".opengl.DemoGLTriangleActivity" android:theme="@style/AppTheme"
             android:screenOrientation="portrait"></activity>
+        <activity android:name=".DemoMediaPlayerActivity" android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"></activity>
     </application>
 </manifest>

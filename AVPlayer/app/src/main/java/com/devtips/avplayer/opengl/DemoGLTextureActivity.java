@@ -3,7 +3,6 @@ package com.devtips.avplayer.opengl;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
@@ -11,7 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import com.devtips.avplayer.R;
-import com.devtips.avplayer.core.opengl.GPU2DTextureProgram;
+import com.devtips.avplayer.core.opengl.GPUTextureProgram;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -29,7 +28,7 @@ public class DemoGLTextureActivity extends Activity {
 
     private GLSurfaceView mGLSurfaceView;
 
-    private GPU2DTextureProgram m2DTextureProgram;
+    private GPUTextureProgram m2DTextureProgram;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,7 +69,7 @@ public class DemoGLTextureActivity extends Activity {
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            m2DTextureProgram =  new GPU2DTextureProgram();
+            m2DTextureProgram =  new GPUTextureProgram();
         }
 
         @Override

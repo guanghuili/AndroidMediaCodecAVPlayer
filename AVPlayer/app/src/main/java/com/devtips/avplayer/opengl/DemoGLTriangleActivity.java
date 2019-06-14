@@ -1,16 +1,12 @@
 package com.devtips.avplayer.opengl;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import com.devtips.avplayer.R;
-import com.devtips.avplayer.core.opengl.GPU2DTextureProgram;
 import com.devtips.avplayer.core.opengl.GPUProgram;
 
 import javax.microedition.khronos.egl.EGLConfig;

@@ -7,13 +7,25 @@ import java.nio.FloatBuffer;
 /**
  * @PACKAGE_NAME: com.devtips.avplayer.core.opengl
  * @Package: com.devtips.avplayer.core.opengl
- * @ClassName: GPU2DTextureProgram
+ * @ClassName: GPUTextureProgram
  * @Author: ligh
  * @CreateDate: 2019/5/11 5:57 PM
  * @Version: 1.0
  * @Description: 可绘制 2D 纹理
  */
-public class GPU2DTextureProgram extends GPUProgram {
+public class GPUTextureProgram extends GPUProgram {
+
+    public enum ProgramType
+    {
+        /**
+         * 显示普通的 2D 纹理
+         */
+        TEXTURE_2D,
+        /**
+         * 显示 SurfaceTexture 采集得到的 OES 纹理
+         */
+        TEXTURE_EXT
+    }
 
     // Simple vertex shader, used for all programs.
     private static final String VERTEX_SHADER =
@@ -33,17 +45,34 @@ public class GPU2DTextureProgram extends GPUProgram {
                     "void main() {\n" +
                     "    gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
                     "}\n";
+
+    // Simple fragment shader for use with external 2D textures (e.g. what we get from
+    // SurfaceTexture).
+    private static final String FRAGMENT_SHADER_EXT =
+            "#extension GL_OES_EGL_image_external : require\n" +
+                    "precision mediump float;\n" +
+                    "varying vec2 vTextureCoord;\n" +
+                    "uniform samplerExternalOES sTexture;\n" +
+                    "void main() {\n" +
+                    "    gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
+                    "}\n";
+
+
     private FloatBuffer textureCoordBuffer;
 
     private  FloatBuffer vertexBuffer;
 
 
-    public GPU2DTextureProgram(String vertexShader, String fragmentShader) {
+    private GPUTextureProgram(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
     }
 
-    public GPU2DTextureProgram(){
-        this(VERTEX_SHADER,FRAGMENT_SHADER_2D);
+    public GPUTextureProgram() {
+        this(ProgramType.TEXTURE_2D);
+    }
+
+    public GPUTextureProgram(ProgramType programType){
+        this(VERTEX_SHADER, programType == ProgramType.TEXTURE_2D ? FRAGMENT_SHADER_2D : FRAGMENT_SHADER_EXT);
 
         int aTextureCoordLocation = glGetAttribLocation("aTextureCoord");
         GLES20.glEnableVertexAttribArray(aTextureCoordLocation);

@@ -3,6 +3,7 @@ package com.devtips.avplayer;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,6 +86,14 @@ null,
         glTextureItemWithDetail.setTag(3);
 
 
+        QMUICommonListItemView playerItemWithDetail = mGroupListView.createItemView(
+                null,
+                "视频播放器初版",
+                null,
+                QMUICommonListItemView.HORIZONTAL,
+                QMUICommonListItemView.ACCESSORY_TYPE_NONE);
+        playerItemWithDetail.setTag(4);
+
         final HashMap<Integer,Class> mDemoMap = new HashMap(){
 
             {
@@ -92,6 +101,7 @@ null,
                 put(1,DemoMediaCodecActivity.class);
                 put(2,DemoGLTriangleActivity.class);
                 put(3,DemoGLTextureActivity.class);
+                put(4,DemoMediaPlayerActivity.class);
             }
 
         };
@@ -115,6 +125,8 @@ null,
                 .addItemView(itemWithDetail, onClickListener)
                 .addItemView(glTriangleItemWithDetail, onClickListener)
                 .addItemView(glTextureItemWithDetail, onClickListener)
+                .addItemView(playerItemWithDetail, onClickListener)
+
                 .addTo(mGroupListView);
 
     }
