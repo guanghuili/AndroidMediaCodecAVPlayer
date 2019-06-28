@@ -94,6 +94,14 @@ null,
                 QMUICommonListItemView.ACCESSORY_TYPE_NONE);
         playerItemWithDetail.setTag(4);
 
+        QMUICommonListItemView audioTrackItemWithDetail = mGroupListView.createItemView(
+                null,
+                "AudioTrack 示例",
+                null,
+                QMUICommonListItemView.HORIZONTAL,
+                QMUICommonListItemView.ACCESSORY_TYPE_NONE);
+        audioTrackItemWithDetail.setTag(5);
+
         final HashMap<Integer,Class> mDemoMap = new HashMap(){
 
             {
@@ -102,6 +110,7 @@ null,
                 put(2,DemoGLTriangleActivity.class);
                 put(3,DemoGLTextureActivity.class);
                 put(4,DemoMediaPlayerActivity.class);
+                put(5,DemoAudioTrackPlayerActivity.class);
             }
 
         };
@@ -126,6 +135,7 @@ null,
                 .addItemView(glTriangleItemWithDetail, onClickListener)
                 .addItemView(glTextureItemWithDetail, onClickListener)
                 .addItemView(playerItemWithDetail, onClickListener)
+                .addItemView(audioTrackItemWithDetail, onClickListener)
 
                 .addTo(mGroupListView);
 
