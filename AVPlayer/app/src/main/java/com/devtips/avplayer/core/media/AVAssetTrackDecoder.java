@@ -1,26 +1,11 @@
-package com.devtips.avplayer;
+package com.devtips.avplayer.core.media;
 
-import android.app.Activity;
-import android.graphics.Color;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
+import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
-import com.qmuiteam.qmui.widget.QMUITopBarLayout;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,57 +17,40 @@ import static android.media.MediaCodec.INFO_TRY_AGAIN_LATER;
 
 /******************************************************************
  * AVPlayer 
- * com.devtips.avplayer
+ * com.devtips.avplayer.core.media
  *
  * @author sprint
- * @Date 2019-06-27 17:16
+ * @Date 2019-07-08 17:00
  * @Copyright (c) 2018 tutucloud.com. All rights reserved.
  ******************************************************************/
-public class DemoAudioTrackPlayerActivity extends Activity {
-    private static final String TAG = "DemoAudioTrackPlayer";
+public class AVAssetTrackDecoder {
 
-    private QMUITopBarLayout mTopBar;
-    private TextView mInfoTextView;
-    private Button mPlayButton;
-    private Button mStopButton;
+    /** 解码的轨道类型 */
+    private  String mDecodeMimeType;
+    private  Context mContext;
+    private  Uri mUri;
 
+    private AVAssetTrackDecoderDelegate mDelegate;
 
-    private Handler mHandler;
     private boolean mRuning;
 
-    private AudioTrack mAudioTrack;
-    int mBufferSize;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_demo_media_audio_track_player);
-        mHandler = new Handler();
-
-        mInfoTextView = findViewById(R.id.info_textview);
-        mPlayButton = findViewById(R.id.start_decode_btn);
-        mStopButton = findViewById(R.id.stop_decode_btn);
-        mStopButton.setEnabled(false);
-        this.initTopBar();
+    public interface AVAssetTrackDecoderDelegate {
+        void newFrameReady(ByteBuffer byteBuffer, MediaCodec.BufferInfo bufferInfo);
+        void outputFormatChaned(MediaFormat mediaFormat);
     }
 
-    private void initTopBar() {
-        mTopBar = findViewById(R.id.topbar);
-        mTopBar.setBackgroundResource(com.qmuiteam.qmui.R.color.qmui_config_color_blue);
-        TextView textView = mTopBar.setTitle("AudioTrack 示例");
-        textView.setTextColor(Color.WHITE);
+    public AVAssetTrackDecoder(Context context,Uri uri,String mimeType) {
+         this.mContext = context;
+         this.mUri = uri;
+         this.mDecodeMimeType = mimeType;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopPlay(null);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopPlay(null);
+    /**
+     * 设置委托
+     * @param delegate
+     */
+    public void setDelegate(AVAssetTrackDecoderDelegate delegate) {
+        this.mDelegate = delegate;
     }
 
     /**
@@ -91,7 +59,6 @@ public class DemoAudioTrackPlayerActivity extends Activity {
      * @return true 喂入成功
      * @since v3.0.1
      */
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private boolean feedInputBuffer(MediaExtractor source, MediaCodec codec) {
 
         if (source == null || codec == null) return false;
@@ -142,8 +109,8 @@ public class DemoAudioTrackPlayerActivity extends Activity {
      * 吐出解码后的数据
      *
      * @return true 有可用数据吐出
+     * @since v3.0.1
      */
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private boolean drainOutputBuffer(MediaCodec mediaCodec) {
 
         if (mediaCodec == null) return false;
@@ -164,24 +131,8 @@ public class DemoAudioTrackPlayerActivity extends Activity {
             case INFO_OUTPUT_FORMAT_CHANGED: {
 
                 MediaFormat outputFormat = mediaCodec.getOutputFormat();
-                int sampleRate = 44100;
-                if (outputFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE))
-                    sampleRate = outputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-
-                int channelConfig = AudioFormat.CHANNEL_OUT_MONO;
-
-                if (outputFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT))
-                    channelConfig = outputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT) == 1 ? AudioFormat.CHANNEL_OUT_MONO : AudioFormat.CHANNEL_OUT_STEREO;
-
-
-                int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-
-                if (outputFormat.containsKey("bit-width"))
-                    audioFormat = outputFormat.getInteger("bit-width") == 8 ? AudioFormat.ENCODING_PCM_8BIT : AudioFormat.ENCODING_PCM_16BIT;
-
-                mBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat) * 2;
-                mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,sampleRate,channelConfig,audioFormat,mBufferSize,AudioTrack.MODE_STREAM);
-                mAudioTrack.play();
+                if(mDelegate != null)
+                    mDelegate.outputFormatChaned(outputFormat);
 
                 return true;
             }
@@ -194,28 +145,21 @@ public class DemoAudioTrackPlayerActivity extends Activity {
                     bufferInfo.size = info.size;
                     bufferInfo.flags = info.flags;
                     bufferInfo.offset = info.offset;
-
                     ByteBuffer outputBuffer = mediaCodec.getOutputBuffers()[outIndex];
                     outputBuffer.position(bufferInfo.offset);
                     outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
 
-                    byte[] audioData = new byte[bufferInfo.size];
-                    outputBuffer.get(audioData);
+                    if (mDelegate != null && mDecodeMimeType.equalsIgnoreCase("audio/")) {
 
-                    mAudioTrack.write(audioData,bufferInfo.offset,Math.min(bufferInfo.size, mBufferSize));
+                        mDelegate.newFrameReady(outputBuffer,bufferInfo);
+                        mediaCodec.releaseOutputBuffer(outIndex,true);
 
-                    // 释放
-                    mediaCodec.releaseOutputBuffer(outIndex, false);
+                    }else
+                    {
+                        mediaCodec.releaseOutputBuffer(outIndex,true);
+                        mDelegate.newFrameReady(outputBuffer,bufferInfo);
 
-
-                    Log.i(TAG,String.format("pts:%s",info.presentationTimeUs));
-
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mInfoTextView.setText(String.format("正在解码中..\npts:%s",info.presentationTimeUs));
-                        }
-                    });
+                    }
 
                 }
 
@@ -227,16 +171,14 @@ public class DemoAudioTrackPlayerActivity extends Activity {
     /**
      * 启动解码器
      */
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    private void doDecoder(){
+    public void doDecoder(Surface surface){
 
         // step 1：创建一个媒体分离器
         MediaExtractor extractor = new MediaExtractor();
         // step 2：为媒体分离器装载媒体文件路径
         // 指定文件路径
-        Uri videoPathUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.demo_video);
         try {
-            extractor.setDataSource(this, videoPathUri, null);
+            extractor.setDataSource(mContext, mUri, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -245,7 +187,7 @@ public class DemoAudioTrackPlayerActivity extends Activity {
         // 媒体文件中的轨道数量 （一般有视频，音频，字幕等）
         int trackCount = extractor.getTrackCount();
         // mime type 指示需要分离的轨道类型
-        String extractMimeType = "audio/";
+        String extractMimeType = mDecodeMimeType;
         MediaFormat trackFormat = null;
         // 记录轨道索引id，MediaExtractor 读取数据之前需要指定分离的轨道索引
         int trackID = -1;
@@ -265,18 +207,20 @@ public class DemoAudioTrackPlayerActivity extends Activity {
         MediaCodec mediaCodec = null;
         try {
             mediaCodec = MediaCodec.createDecoderByType(trackFormat.getString(MediaFormat.KEY_MIME));
-            mediaCodec.configure(trackFormat,null,null,0);
+            mediaCodec.configure(trackFormat,surface,null,0);
             mediaCodec.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        mRuning = true;
 
         while (mRuning) {
             // step 6: 向解码器喂入数据
             boolean ret = feedInputBuffer(extractor,mediaCodec);
             // step 7: 从解码器吐出数据
             boolean decRet = drainOutputBuffer(mediaCodec);
+
             if (!ret && !decRet)break;;
         }
 
@@ -287,40 +231,10 @@ public class DemoAudioTrackPlayerActivity extends Activity {
         // 释放解码器
         mediaCodec.release();
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                mPlayButton.setEnabled(true);
-                mInfoTextView.setText("解码完成");
-            }
-        });
-
     }
 
-    /** 启动视频解码 */
-    public void startPlay(View sender) {
-        mRuning = true;
-        mPlayButton.setEnabled(false);
-        mStopButton.setEnabled(true);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                doDecoder();
-            }
-        }).start();
-    }
-
-    /** 停止播放 */
-    public void stopPlay(View sender) {
-        if (mAudioTrack == null) return;
+    public void stop(){
         mRuning = false;
-        mPlayButton.setEnabled(true);
-        mStopButton.setEnabled(false);
-
-
-        mAudioTrack.stop();
-        mAudioTrack = null;
     }
-
 
 }

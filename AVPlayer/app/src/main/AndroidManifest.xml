@@ -29,5 +29,7 @@
 
         <activity android:name=".DemoAudioTrackPlayerActivity" android:theme="@style/AppTheme"
             android:screenOrientation="portrait"></activity>
+        <activity android:name=".DemoAVPlayer01Activity" android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"></activity>
     </application>
 </manifest>

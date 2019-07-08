@@ -3,7 +3,6 @@ package com.devtips.avplayer;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,6 +101,15 @@ null,
                 QMUICommonListItemView.ACCESSORY_TYPE_NONE);
         audioTrackItemWithDetail.setTag(5);
 
+
+        QMUICommonListItemView avPlayer01ItemWithDetail = mGroupListView.createItemView(
+                null,
+                "AVPlayer_01",
+                null,
+                QMUICommonListItemView.HORIZONTAL,
+                QMUICommonListItemView.ACCESSORY_TYPE_NONE);
+        avPlayer01ItemWithDetail.setTag(6);
+
         final HashMap<Integer,Class> mDemoMap = new HashMap(){
 
             {
@@ -111,6 +119,8 @@ null,
                 put(3,DemoGLTextureActivity.class);
                 put(4,DemoMediaPlayerActivity.class);
                 put(5,DemoAudioTrackPlayerActivity.class);
+                put(6, DemoAVPlayer01Activity.class);
+
             }
 
         };
@@ -136,6 +146,7 @@ null,
                 .addItemView(glTextureItemWithDetail, onClickListener)
                 .addItemView(playerItemWithDetail, onClickListener)
                 .addItemView(audioTrackItemWithDetail, onClickListener)
+                .addItemView(avPlayer01ItemWithDetail, onClickListener)
 
                 .addTo(mGroupListView);
 
